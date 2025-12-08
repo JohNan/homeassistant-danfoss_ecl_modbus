@@ -1,0 +1,11 @@
+{
+  "domain": "danfoss_ecl_modbus",
+  "name": "Danfoss ECL Modbus",
+  "version": "0.1.0",
+  "documentation": "https://www.home-assistant.io/integrations/danfoss_ecl_modbus",
+  "issue_tracker": "https://github.com/home-assistant/core/issues",
+  "codeowners": [],
+  "iot_class": "local_polling",
+  "config_flow": true,
+  "requirements": ["pymodbus==3.6.8"]
+}
