@@ -1,4 +1,4 @@
-"""Config flow for ECL Modbus."""
+"""Config flow for Danfoss ECL Modbus."""
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SLAVE
@@ -6,8 +6,8 @@ from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SLAVE
 from .const import DOMAIN
 
 
-class EclModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """ECL Modbus config flow."""
+class DanfossEclModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Danfoss ECL Modbus config flow."""
 
     VERSION = 1
 

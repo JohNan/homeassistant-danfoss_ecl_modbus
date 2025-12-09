@@ -1,4 +1,4 @@
-"""The ECL Modbus integration."""
+"""The Danfoss ECL Modbus integration."""
 from pymodbus.client import AsyncModbusTcpClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
@@ -11,7 +11,7 @@ PLATFORMS = ["switch", "binary_sensor", "sensor", "climate"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up ECL Modbus from a config entry."""
+    """Set up Danfoss ECL Modbus from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]

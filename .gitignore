@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+# Home Assistant
+config/
+.HA_VERSION
+.storage/
+automations.yaml
+configuration.yaml
+customize.yaml
+groups.yaml
+home-assistant.log
+home-assistant_v2.db
+known_devices.yaml
+scenes.yaml
+scripts.yaml
+secrets.yaml
+tts/
+core/

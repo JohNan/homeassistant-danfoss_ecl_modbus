@@ -1,4 +1,4 @@
-"""Climate platform for ECL Modbus."""
+"""Climate platform for Danfoss ECL Modbus."""
 from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
@@ -17,14 +17,14 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the ECL Modbus climate platform."""
+    """Set up the Danfoss ECL Modbus climate platform."""
     client = hass.data[DOMAIN][config_entry.entry_id]
     slave = config_entry.data[CONF_SLAVE]
     async_add_entities([EclVermeClimate(client, slave)])
 
 
 class EclVermeClimate(ClimateEntity):
-    """Representation of an ECL Modbus climate entity."""
+    """Representation of a Danfoss ECL Modbus climate entity."""
 
     def __init__(self, client, slave):
         """Initialize the climate entity."""
