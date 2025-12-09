@@ -1,4 +1,4 @@
-"""Sensor platform for ECL Modbus."""
+"""Sensor platform for Danfoss ECL Modbus."""
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SLAVE, UnitOfTemperature
@@ -13,7 +13,7 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the ECL Modbus sensor platform."""
+    """Set up the Danfoss ECL Modbus sensor platform."""
     client = hass.data[DOMAIN][config_entry.entry_id]
     slave = config_entry.data[CONF_SLAVE]
     async_add_entities(
@@ -26,7 +26,7 @@ async def async_setup_entry(
 
 
 class EclActualModeSensor(SensorEntity):
-    """Representation of an ECL Modbus sensor."""
+    """Representation of a Danfoss ECL Modbus sensor."""
 
     def __init__(self, client, slave):
         """Initialize the sensor."""
@@ -44,7 +44,7 @@ class EclActualModeSensor(SensorEntity):
 
 
 class EclOutsideTempSensor(SensorEntity):
-    """Representation of an ECL Modbus temperature sensor."""
+    """Representation of a Danfoss ECL Modbus temperature sensor."""
 
     def __init__(self, client, slave):
         """Initialize the sensor."""
@@ -65,7 +65,7 @@ class EclOutsideTempSensor(SensorEntity):
 
 
 class EclAdditionTempSensor(SensorEntity):
-    """Representation of an ECL Modbus temperature sensor."""
+    """Representation of a Danfoss ECL Modbus temperature sensor."""
 
     def __init__(self, client, slave):
         """Initialize the sensor."""

@@ -1,4 +1,4 @@
-"""Binary sensor platform for ECL Modbus."""
+"""Binary sensor platform for Danfoss ECL Modbus."""
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SLAVE
@@ -13,14 +13,14 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the ECL Modbus binary sensor platform."""
+    """Set up the Danfoss ECL Modbus binary sensor platform."""
     client = hass.data[DOMAIN][config_entry.entry_id]
     slave = config_entry.data[CONF_SLAVE]
     async_add_entities([EclPumpBinarySensor(client, slave)])
 
 
 class EclPumpBinarySensor(BinarySensorEntity):
-    """Representation of an ECL Modbus binary sensor."""
+    """Representation of a Danfoss ECL Modbus binary sensor."""
 
     def __init__(self, client, slave):
         """Initialize the binary sensor."""

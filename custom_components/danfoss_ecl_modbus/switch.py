@@ -1,4 +1,4 @@
-"""Switch platform for ECL Modbus."""
+"""Switch platform for Danfoss ECL Modbus."""
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SLAVE
@@ -13,14 +13,14 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the ECL Modbus switch platform."""
+    """Set up the Danfoss ECL Modbus switch platform."""
     client = hass.data[DOMAIN][config_entry.entry_id]
     slave = config_entry.data[CONF_SLAVE]
     async_add_entities([EclPumpSwitch(client, slave)])
 
 
 class EclPumpSwitch(SwitchEntity):
-    """Representation of an ECL Modbus switch."""
+    """Representation of a Danfoss ECL Modbus switch."""
 
     def __init__(self, client, slave):
         """Initialize the switch."""
