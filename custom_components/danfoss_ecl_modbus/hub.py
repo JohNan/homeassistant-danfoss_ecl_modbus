@@ -114,9 +114,7 @@ class EclHub:
             if not await self.connect():
                 raise ConnectionError("Failed to connect to Modbus device")
             try:
-                await self._client.write_register(
-                    address, value, slave=self._slave
-                )
+                await self._client.write_register(address, value, slave=self._slave)
             except Exception as e:
                 _LOGGER.error("Error writing register %s: %s", address, e)
                 raise e
