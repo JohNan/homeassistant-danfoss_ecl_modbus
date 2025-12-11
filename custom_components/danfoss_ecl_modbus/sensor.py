@@ -16,15 +16,15 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 
 
-@dataclass
+@dataclass(frozen=True)
 class EclSensorEntityDescription(SensorEntityDescription):
     """Class describing Danfoss ECL sensor entities."""
 
-    key_in_data: str = None
+    key_in_data: str | None = None
 
     scale: float = 1.0
 
-    native_precision: int = None
+    native_precision: int | None = None
 
 
 SENSOR_TYPES: tuple[EclSensorEntityDescription, ...] = (
@@ -72,13 +72,15 @@ async def async_setup_entry(
 class EclSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Danfoss ECL Modbus sensor."""
 
-    entity_description: EclSensorEntityDescription
+    entity__description: EclSensorEntityDescription
 
     def __init__(self, coordinator, description):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{coordinator.config_entry.entry_id}-{description.key}"
+        assert coordinator.config_entry
+        self._entry_id = coordinator.config_entry.entry_id
+        self._attr_unique_id = f"{self._entry_id}-{description.key}"
         self._attr_has_entity_name = True
         if description.native_precision is not None:
             self._attr_native_precision = description.native_precision
@@ -87,7 +89,7 @@ class EclSensor(CoordinatorEntity, SensorEntity):
     def device_info(self):
         """Return device information."""
         return {
-            "identifiers": {(DOMAIN, self.coordinator.config_entry.entry_id)},
+            "identifiers": {(DOMAIN, self._entry_id)},
             "name": "Danfoss ECL 110",
             "manufacturer": "Danfoss",
             "model": "ECL 110",
@@ -96,6 +98,8 @@ class EclSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
+        if self.entity_description.key_in_data is None:
+            return None
         value = self.coordinator.data.get(self.entity_description.key_in_data)
         if value is None:
             return None
