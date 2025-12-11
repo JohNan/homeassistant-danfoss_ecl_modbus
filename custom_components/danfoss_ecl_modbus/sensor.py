@@ -17,19 +17,12 @@ from .const import DOMAIN
 
 
 @dataclass
-
-
 class EclSensorEntityDescription(SensorEntityDescription):
-
-
     """Class describing Danfoss ECL sensor entities."""
-
 
     key_in_data: str = None
 
-
     scale: float = 1.0
-
 
     native_precision: int = None
 

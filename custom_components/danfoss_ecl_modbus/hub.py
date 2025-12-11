@@ -47,7 +47,7 @@ class EclHub:
             try:
                 # Read Pump (Holding)
                 rr = await self._client.read_holding_registers(
-                    REG_PUMP, 1, slave=self._slave
+                    REG_PUMP, count=1, slave=self._slave
                 )
                 if not rr.isError():
                     data["pump"] = rr.registers[0]
@@ -56,7 +56,7 @@ class EclHub:
 
                 # Read HVAC Mode (Holding)
                 rr = await self._client.read_holding_registers(
-                    REG_HVAC_MODE, 1, slave=self._slave
+                    REG_HVAC_MODE, count=1, slave=self._slave
                 )
                 if not rr.isError():
                     data["hvac_mode"] = rr.registers[0]
@@ -65,7 +65,7 @@ class EclHub:
 
                 # Read Actual Mode (Input)
                 rr = await self._client.read_input_registers(
-                    REG_ACTUAL_MODE, 1, slave=self._slave
+                    REG_ACTUAL_MODE, count=1, slave=self._slave
                 )
                 if not rr.isError():
                     data["actual_mode"] = rr.registers[0]
@@ -74,7 +74,7 @@ class EclHub:
 
                 # Read Target Temp (Holding)
                 rr = await self._client.read_holding_registers(
-                    REG_TARGET_TEMP, 1, slave=self._slave
+                    REG_TARGET_TEMP, count=1, slave=self._slave
                 )
                 if not rr.isError():
                     data["target_temp"] = rr.registers[0]
@@ -83,7 +83,7 @@ class EclHub:
 
                 # Read Outside Temp (Input)
                 rr = await self._client.read_input_registers(
-                    REG_OUTSIDE_TEMP, 1, slave=self._slave
+                    REG_OUTSIDE_TEMP, count=1, slave=self._slave
                 )
                 if not rr.isError():
                     data["outside_temp"] = rr.registers[0]
@@ -92,7 +92,7 @@ class EclHub:
 
                 # Read Addition Temp (Input)
                 rr = await self._client.read_input_registers(
-                    REG_ADDITION_TEMP, 1, slave=self._slave
+                    REG_ADDITION_TEMP, count=1, slave=self._slave
                 )
                 if not rr.isError():
                     data["addition_temp"] = rr.registers[0]
@@ -114,7 +114,9 @@ class EclHub:
             if not await self.connect():
                 raise ConnectionError("Failed to connect to Modbus device")
             try:
-                await self._client.write_register(address, value, slave=self._slave)
+                await self._client.write_register(
+                    address, value, slave=self._slave
+                )
             except Exception as e:
                 _LOGGER.error("Error writing register %s: %s", address, e)
                 raise e
