@@ -1,9 +1,13 @@
 """Binary sensor platform for Danfoss ECL Modbus."""
-from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
+
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_SLAVE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 
@@ -14,30 +18,36 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Danfoss ECL Modbus binary sensor platform."""
-    client = hass.data[DOMAIN][config_entry.entry_id]
-    slave = config_entry.data[CONF_SLAVE]
-    async_add_entities([EclPumpBinarySensor(client, slave)])
+    data = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = data["coordinator"]
+    async_add_entities([EclPumpBinarySensor(coordinator)])
 
 
-class EclPumpBinarySensor(BinarySensorEntity):
+class EclPumpBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a Danfoss ECL Modbus binary sensor."""
 
-    def __init__(self, client, slave):
+    def __init__(self, coordinator):
         """Initialize the binary sensor."""
-        self._client = client
-        self._slave = slave
-        self._attr_name = "ECL Pump"
-        self._attr_unique_id = "ecl-pump"
+        super().__init__(coordinator)
+        self._attr_name = "Pump"
+        self._attr_unique_id = f"{coordinator.config_entry.entry_id}-pump-binary"
+        self._attr_has_entity_name = True
         self._attr_device_class = BinarySensorDeviceClass.RUNNING
-        self._is_on = None
+
+    @property
+    def device_info(self):
+        """Return device information."""
+        return {
+            "identifiers": {(DOMAIN, self.coordinator.config_entry.entry_id)},
+            "name": "Danfoss ECL 110",
+            "manufacturer": "Danfoss",
+            "model": "ECL 110",
+        }
 
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._is_on
-
-    async def async_update(self):
-        """Fetch new state data for the binary sensor."""
-        result = await self._client.read_input_registers(4001, 1, self._slave)
-        if result.registers:
-            self._is_on = result.registers[0] == 1
+        val = self.coordinator.data.get("pump")
+        if val is None:
+            return None
+        return val == 1

@@ -1,21 +1,24 @@
-"""Test the Danfoss ECL Modbus binary sensor."""
-from unittest.mock import AsyncMock, patch
+"""Test the Danfoss ECL Modbus binary sensor platform."""
 
-from custom_components.danfoss_ecl_modbus.binary_sensor import EclPumpBinarySensor
+from unittest.mock import MagicMock
+
+import pytest
 from homeassistant.core import HomeAssistant
 
+from custom_components.danfoss_ecl_modbus.binary_sensor import async_setup_entry
+from custom_components.danfoss_ecl_modbus.const import DOMAIN
 
-async def test_binary_sensor(hass: HomeAssistant) -> None:
-    """Test the Danfoss ECL Modbus binary sensor."""
-    client = AsyncMock()
-    slave = 5
-    binary_sensor = EclPumpBinarySensor(client, slave)
 
-    # Test updating the binary sensor state
-    with patch.object(
-        client,
-        "read_input_registers",
-        return_value=AsyncMock(registers=[1]),
-    ):
-        await binary_sensor.async_update()
-    assert binary_sensor.is_on is True
+@pytest.mark.asyncio
+async def test_binary_sensor_setup(hass: HomeAssistant, mock_coordinator):
+    """Test binary sensor setup."""
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry_id"
+    hass.data[DOMAIN] = {"test_entry_id": {"coordinator": mock_coordinator}}
+
+    async_add_entities = MagicMock()
+    await async_setup_entry(hass, mock_entry, async_add_entities)
+
+    entities = list(async_add_entities.call_args[0][0])
+    assert len(entities) == 1
+    assert entities[0].is_on is True
