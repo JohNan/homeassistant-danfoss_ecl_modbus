@@ -45,59 +45,30 @@ class EclHub:
                 raise ConnectionError("Failed to connect to Modbus device")
 
             try:
-                # Read Pump (Holding)
-                rr = await self._client.read_holding_registers(
-                    REG_PUMP, count=1, slave=self._slave
-                )
-                if not rr.isError():
-                    data["pump"] = rr.registers[0]
-                else:
-                    _LOGGER.warning("Error reading Pump: %s", rr)
+                # key, register, is_input
+                registers = [
+                    ("pump", REG_PUMP, False),
+                    ("hvac_mode", REG_HVAC_MODE, False),
+                    ("actual_mode", REG_ACTUAL_MODE, True),
+                    ("target_temp", REG_TARGET_TEMP, False),
+                    ("outside_temp", REG_OUTSIDE_TEMP, True),
+                    ("addition_temp", REG_ADDITION_TEMP, True),
+                ]
 
-                # Read HVAC Mode (Holding)
-                rr = await self._client.read_holding_registers(
-                    REG_HVAC_MODE, count=1, slave=self._slave
-                )
-                if not rr.isError():
-                    data["hvac_mode"] = rr.registers[0]
-                else:
-                    _LOGGER.warning("Error reading HVAC Mode: %s", rr)
+                for key, reg, is_input in registers:
+                    if is_input:
+                        rr = await self._client.read_input_registers(
+                            reg, count=1, slave=self._slave
+                        )
+                    else:
+                        rr = await self._client.read_holding_registers(
+                            reg, count=1, slave=self._slave
+                        )
 
-                # Read Actual Mode (Input)
-                rr = await self._client.read_input_registers(
-                    REG_ACTUAL_MODE, count=1, slave=self._slave
-                )
-                if not rr.isError():
-                    data["actual_mode"] = rr.registers[0]
-                else:
-                    _LOGGER.warning("Error reading Actual Mode: %s", rr)
-
-                # Read Target Temp (Holding)
-                rr = await self._client.read_holding_registers(
-                    REG_TARGET_TEMP, count=1, slave=self._slave
-                )
-                if not rr.isError():
-                    data["target_temp"] = rr.registers[0]
-                else:
-                    _LOGGER.warning("Error reading Target Temp: %s", rr)
-
-                # Read Outside Temp (Input)
-                rr = await self._client.read_input_registers(
-                    REG_OUTSIDE_TEMP, count=1, slave=self._slave
-                )
-                if not rr.isError():
-                    data["outside_temp"] = rr.registers[0]
-                else:
-                    _LOGGER.warning("Error reading Outside Temp: %s", rr)
-
-                # Read Addition Temp (Input)
-                rr = await self._client.read_input_registers(
-                    REG_ADDITION_TEMP, count=1, slave=self._slave
-                )
-                if not rr.isError():
-                    data["addition_temp"] = rr.registers[0]
-                else:
-                    _LOGGER.warning("Error reading Addition Temp: %s", rr)
+                    if not rr.isError():
+                        data[key] = rr.registers[0]
+                    else:
+                        _LOGGER.warning("Error reading %s: %s", key, rr)
 
             except ModbusException as e:
                 _LOGGER.error("Modbus error: %s", e)

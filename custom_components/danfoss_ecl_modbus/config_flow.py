@@ -28,7 +28,7 @@ class DanfossEclModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     await hub.close()
                     return self.async_create_entry(title=host, data=user_input)
                 errors["base"] = "cannot_connect"
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 errors["base"] = "cannot_connect"
             finally:
                 await hub.close()

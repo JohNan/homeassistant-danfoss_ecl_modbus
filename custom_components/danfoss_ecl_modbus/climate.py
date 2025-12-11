@@ -29,6 +29,8 @@ async def async_setup_entry(
 class EclVermeClimate(CoordinatorEntity, ClimateEntity):
     """Representation of a Danfoss ECL Modbus climate entity."""
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(self, coordinator, hub):
         """Initialize the climate entity."""
         super().__init__(coordinator)
