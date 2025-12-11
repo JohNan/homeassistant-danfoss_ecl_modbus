@@ -1,4 +1,6 @@
 {
   "name": "Danfoss ECL Modbus",
-  "homeassistant": "2025.12.1"
+  "homeassistant": "2025.12.1",
+  "zip_release": true,
+  "filename": "danfoss_ecl_modbus.zip" 
 }
