@@ -1,15 +1,17 @@
 """Climate platform for Danfoss ECL Modbus."""
+
 from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_SLAVE, UnitOfTemperature
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, REG_HVAC_MODE, REG_TARGET_TEMP
 
 
 async def async_setup_entry(
@@ -18,79 +20,65 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Danfoss ECL Modbus climate platform."""
-    client = hass.data[DOMAIN][config_entry.entry_id]
-    slave = config_entry.data[CONF_SLAVE]
-    async_add_entities([EclVermeClimate(client, slave)])
+    data = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = data["coordinator"]
+    hub = data["hub"]
+    async_add_entities([EclVermeClimate(coordinator, hub)])
 
 
-class EclVermeClimate(ClimateEntity):
+class EclVermeClimate(CoordinatorEntity, ClimateEntity):
     """Representation of a Danfoss ECL Modbus climate entity."""
 
-    def __init__(self, client, slave):
+    def __init__(self, coordinator, hub):
         """Initialize the climate entity."""
-        self._client = client
-        self._slave = slave
-        self._attr_name = "ECL Värme"
-        self._attr_unique_id = "ecl-heating"
+        super().__init__(coordinator)
+        self._hub = hub
+        self._attr_name = "Heating"
+        self._attr_unique_id = f"{coordinator.config_entry.entry_id}-climate"
+        self._attr_has_entity_name = True
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._attr_hvac_modes = [HVACMode.AUTO, HVACMode.OFF]
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
         self._attr_min_temp = 15
         self._attr_max_temp = 30
         self._attr_target_temperature_step = 1
-        self._hvac_mode = None
-        self._current_temperature = None
-        self._target_temperature = None
+
+    @property
+    def device_info(self):
+        """Return device information."""
+        return {
+            "identifiers": {(DOMAIN, self.coordinator.config_entry.entry_id)},
+            "name": "Danfoss ECL 110",
+            "manufacturer": "Danfoss",
+            "model": "ECL 110",
+        }
 
     @property
     def hvac_mode(self):
         """Return current hvac mode."""
-        return self._hvac_mode
-
-    @property
-    def current_temperature(self):
-        """Return the current temperature."""
-        return self._current_temperature
+        val = self.coordinator.data.get("hvac_mode")
+        if val == 1:
+            return HVACMode.AUTO
+        if val == 4:
+            return HVACMode.OFF
+        return None
 
     @property
     def target_temperature(self):
         """Return the temperature we try to reach."""
-        return self._target_temperature
+        return self.coordinator.data.get("target_temp")
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
         if hvac_mode == HVACMode.AUTO:
-            await self._client.write_register(4200, 1, self._slave)
+            await self._hub.write_register(REG_HVAC_MODE, 1)
         elif hvac_mode == HVACMode.OFF:
-            await self._client.write_register(4200, 4, self._slave)
-        self._hvac_mode = hvac_mode
-        self.async_write_ha_state()
+            await self._hub.write_register(REG_HVAC_MODE, 4)
+        await self.coordinator.async_request_refresh()
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
-        temperature = kwargs.get("temperature")
-        if temperature is not None:
-            await self._client.write_register(11179, int(temperature), self._slave)
-            self._target_temperature = temperature
-            self.async_write_ha_state()
-
-    async def async_update(self):
-        """Fetch new state data for the climate entity."""
-        # Get current temperature
-        result = await self._client.read_holding_registers(11179, 1, self._slave)
-        if result.registers:
-            self._current_temperature = result.registers[0]
-
-        # Get target temperature
-        result = await self._client.read_holding_registers(11179, 1, self._slave)
-        if result.registers:
-            self._target_temperature = result.registers[0]
-
-        # Get HVAC mode
-        result = await self._client.read_holding_registers(4200, 1, self._slave)
-        if result.registers:
-            mode = result.registers[0]
-            if mode == 1:
-                self._hvac_mode = HVACMode.AUTO
-            elif mode == 4:
-                self._hvac_mode = HVACMode.OFF
+        temp = kwargs.get("temperature")
+        if temp:
+            await self._hub.write_register(REG_TARGET_TEMP, int(temp))
+            await self.coordinator.async_request_refresh()

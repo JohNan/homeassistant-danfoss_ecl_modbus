@@ -7,5 +7,5 @@
   "codeowners": ["@JohNan"],
   "iot_class": "local_polling",
   "config_flow": true,
-  "requirements": ["pymodbus==3.6.8"]
+  "requirements": ["pymodbus>=3.6.8"]
 }

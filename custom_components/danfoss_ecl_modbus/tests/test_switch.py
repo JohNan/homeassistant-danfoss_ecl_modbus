@@ -1,41 +1,34 @@
-"""Test the Danfoss ECL Modbus switch."""
-from unittest.mock import AsyncMock, patch
+"""Test the Danfoss ECL Modbus switch platform."""
 
-from custom_components.danfoss_ecl_modbus.switch import EclPumpSwitch
+from unittest.mock import MagicMock
+
+import pytest
 from homeassistant.core import HomeAssistant
 
+from custom_components.danfoss_ecl_modbus.const import DOMAIN, REG_PUMP
+from custom_components.danfoss_ecl_modbus.switch import async_setup_entry
 
-async def test_switch(hass: HomeAssistant) -> None:
-    """Test the Danfoss ECL Modbus switch."""
-    client = AsyncMock()
-    slave = 5
-    switch = EclPumpSwitch(client, slave)
-    switch.hass = hass
-    switch.entity_id = "switch.ecl_pump_switch"
 
-    # Test turning the switch on
-    with patch.object(
-        client,
-        "read_holding_registers",
-        return_value=AsyncMock(registers=[1]),
-    ):
-        await switch.async_turn_on()
+@pytest.mark.asyncio
+async def test_switch_setup(hass: HomeAssistant, mock_coordinator, mock_hub):
+    """Test switch setup."""
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry_id"
+    hass.data[DOMAIN] = {
+        "test_entry_id": {"coordinator": mock_coordinator, "hub": mock_hub}
+    }
+
+    async_add_entities = MagicMock()
+    await async_setup_entry(hass, mock_entry, async_add_entities)
+
+    entities = list(async_add_entities.call_args[0][0])
+    assert len(entities) == 1
+    switch = entities[0]
+
     assert switch.is_on is True
 
-    # Test turning the switch off
-    with patch.object(
-        client,
-        "read_holding_registers",
-        return_value=AsyncMock(registers=[0]),
-    ):
-        await switch.async_turn_off()
-    assert switch.is_on is False
+    await switch.async_turn_off()
+    mock_hub.write_register.assert_called_with(REG_PUMP, 0)
 
-    # Test updating the switch state
-    with patch.object(
-        client,
-        "read_holding_registers",
-        return_value=AsyncMock(registers=[1]),
-    ):
-        await switch.async_update()
-    assert switch.is_on is True
+    await switch.async_turn_on()
+    mock_hub.write_register.assert_called_with(REG_PUMP, 1)
