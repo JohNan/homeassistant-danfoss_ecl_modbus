@@ -21,10 +21,10 @@ _LOGGER = logging.getLogger(__name__)
 class EclHub:
     """Hub to manage Modbus connection and data retrieval."""
 
-    def __init__(self, host, port, slave):
+    def __init__(self, host, port, device_id):
         """Initialize the Hub."""
         self._client = AsyncModbusTcpClient(host, port=port)
-        self._slave = slave
+        self._device_id = device_id
         self._lock = asyncio.Lock()
 
     async def connect(self):
@@ -58,11 +58,11 @@ class EclHub:
                 for key, reg, is_input in registers:
                     if is_input:
                         rr = await self._client.read_input_registers(
-                            reg, count=1, slave=self._slave
+                            reg, count=1, device_id=self._device_id
                         )
                     else:
                         rr = await self._client.read_holding_registers(
-                            reg, count=1, slave=self._slave
+                            reg, count=1, device_id=self._device_id
                         )
 
                     if not rr.isError():
@@ -85,7 +85,9 @@ class EclHub:
             if not await self.connect():
                 raise ConnectionError("Failed to connect to Modbus device")
             try:
-                await self._client.write_register(address, value, slave=self._slave)
+                await self._client.write_register(
+                    address, value, device_id=self._device_id
+                )
             except Exception as e:
                 _LOGGER.error("Error writing register %s: %s", address, e)
                 raise e
