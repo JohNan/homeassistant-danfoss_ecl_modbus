@@ -32,22 +32,35 @@ Register mappings are defined in `const.py`. Key registers (based on current imp
 
 ## Development Guidelines
 
+### Environment Setup
+
+This project requires Python 3.13.2 or higher. It uses `uv` for dependency management and `ruff` for linting and formatting.
+
+1.  **Install `uv`:**
+    Follow the official installation instructions for `uv`.
+
+2.  **Install dependencies:**
+    ```bash
+    uv sync --all-extras --dev
+    ```
+
 ### Quality Assurance
 
 Always run linters and tests before finalizing changes.
 
-**1. Linters:**
-Ensure the code adheres to style guidelines (Black, Isort, Flake8) and static analysis (Pylint, Mypy).
+**1. Linting and Formatting:**
+`ruff` is used for linting, formatting, and import sorting.
 
 ```bash
-# Run auto-formatters
-black .
-isort .
+# Check for linting errors and formatting issues
+uv run ruff check .
 
-# Run checkers
-flake8 custom_components/danfoss_ecl_modbus
-pylint custom_components/danfoss_ecl_modbus
-mypy custom_components/danfoss_ecl_modbus
+# Fix linting errors and format the code
+uv run ruff format .
+uv run ruff check . --fix
+
+# Run static analysis with mypy
+uv run mypy custom_components/danfoss_ecl_modbus
 ```
 
 **2. Tests:**
@@ -55,7 +68,7 @@ Verify changes with the test suite.
 
 ```bash
 # Run all tests
-PYTHONPATH=. pytest
+uv run pytest
 ```
 
 ### Testing Notes

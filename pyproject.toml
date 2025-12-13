@@ -1,30 +1,61 @@
-[tool.black]
+[project]
+name = "danfoss-ecl-modbus"
+version = "0.1.0"
+requires-python = ">=3.13.2"
+dependencies = [
+    "pymodbus==3.11.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-homeassistant-custom-component>=0.13.300",
+    "pytest-asyncio",
+    "pytest-cov",
+    "sqlalchemy",
+    "ruff",
+    "mypy",
+]
+
+[tool.ruff]
 line-length = 88
-target-version = ['py312']
+target-version = "py313"
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-
-[tool.pylint.messages_control]
-disable = [
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "C", "B", "pylint"
+]
+ignore = [
+    "E203", # whitespace-before-punctuation
+    "W503", # line-break-before-binary-operator
     "C0111", # missing-docstring
     "C0103", # invalid-name
-    "C0301", # line-too-long (handled by black)
-    "W0212", # protected-access (common in HA tests)
+    "W0212", # protected-access
     "E1101", # no-member
     "R0903", # too-few-public-methods
-    "R0801", # duplicate-code
-    "W0621", # redefined-outer-name (pytest fixtures)
-    "W0613", # unused-argument (common in API overrides)
-    "W0223", # abstract-method (common in HA entities)
-    "E1123", # unexpected-keyword-arg (dataclass issues)
+    "W0621", # redefined-outer-name
+    "W0613", # unused-argument
+    "W0223", # abstract-method
+    "E1123", # unexpected-keyword-arg
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "old",
+    "build",
+    "dist",
+    "venv",
 ]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 ignore_missing_imports = true
 explicit_package_bases = true
 # Disable the misc error category for lambda type inference issues
 disable_error_code = ["misc"]
 exclude = [".venv", "config"]
+
+[tool.pytest.ini_options]
+testpaths = ["custom_components/danfoss_ecl_modbus/tests"]
+asyncio_mode = "auto"
