@@ -27,7 +27,6 @@ select = [
 ]
 ignore = [
     "E203", # whitespace-before-punctuation
-    "W503", # line-break-before-binary-operator
     "C0111", # missing-docstring
     "C0103", # invalid-name
     "W0212", # protected-access
