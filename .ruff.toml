@@ -1,0 +1,36 @@
+line-length = 88
+target-version = "py313"
+
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "old",
+    "build",
+    "dist",
+    "venv",
+]
+
+[lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "pylint",
+]
+
+ignore = [
+    "E203",   # whitespace-before-punctuation
+    "C0111",  # missing-docstring
+    "C0103",  # invalid-name
+    "W0212",  # protected-access
+    "E1101",  # no-member
+    "R0903",  # too-few-public-methods
+    "W0621",  # redefined-outer-name
+    "W0613",  # unused-argument
+    "W0223",  # abstract-method
+    "E1123",  # unexpected-keyword-arg
+]

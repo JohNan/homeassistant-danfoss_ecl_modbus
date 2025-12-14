@@ -17,36 +17,6 @@ dev = [
     "mypy",
 ]
 
-[tool.ruff]
-line-length = 88
-target-version = "py313"
-
-[tool.ruff.lint]
-select = [
-    "E", "W", "F", "I", "C", "B", "pylint"
-]
-ignore = [
-    "E203", # whitespace-before-punctuation
-    "C0111", # missing-docstring
-    "C0103", # invalid-name
-    "W0212", # protected-access
-    "E1101", # no-member
-    "R0903", # too-few-public-methods
-    "W0621", # redefined-outer-name
-    "W0613", # unused-argument
-    "W0223", # abstract-method
-    "E1123", # unexpected-keyword-arg
-]
-exclude = [
-    ".git",
-    "__pycache__",
-    "docs/source/conf.py",
-    "old",
-    "build",
-    "dist",
-    "venv",
-]
-
 [tool.mypy]
 python_version = "3.13"
 ignore_missing_imports = true
