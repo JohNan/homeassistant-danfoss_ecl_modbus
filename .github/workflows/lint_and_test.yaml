@@ -16,22 +16,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: "pip"
+          python-version: "3.13.2"
+      - uses: astral-sh/setup-uv@v1
       - name: Install dependencies
+        run: uv sync --all-extras --dev
+      - name: Run Linters
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-      - name: Run Black
-        run: black --check .
-      - name: Run Isort
-        run: isort --check .
-      - name: Run Flake8
-        run: flake8 custom_components/danfoss_ecl_modbus
-      - name: Run Pylint
-        run: PYTHONPATH=. pylint custom_components/danfoss_ecl_modbus
-      - name: Run Mypy
-        run: mypy custom_components/danfoss_ecl_modbus
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy custom_components/danfoss_ecl_modbus
 
   test:
     name: Test
@@ -42,11 +35,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: "pip"
+          python-version: "3.13.2"
+      - uses: astral-sh/setup-uv@v1
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+        run: uv sync --all-extras --dev
       - name: Run Tests
-        run: PYTHONPATH=. pytest --cov=custom_components.danfoss_ecl_modbus --cov-report=term-missing
+        run: uv run pytest --cov=custom_components.danfoss_ecl_modbus --cov-report=term-missing
