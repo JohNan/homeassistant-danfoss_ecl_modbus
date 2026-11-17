@@ -1,61 +1,68 @@
 """Switch platform for Danfoss ECL Modbus."""
 
-from homeassistant.components.switch import SwitchEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from __future__ import annotations
 
-from .const import DOMAIN, REG_PUMP
+from typing import TYPE_CHECKING, Any
+
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.exceptions import HomeAssistantError
+from modbus_connection import ModbusError
+
+from .const import REG_PUMP
+from .entity import DanfossEclEntity
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from . import DanfossEclConfigEntry
+    from .coordinator import DanfossEclCoordinator
+    from .hub import EclHub
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: DanfossEclConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Danfoss ECL Modbus switch platform."""
-    data = hass.data[DOMAIN][config_entry.entry_id]
-    coordinator = data["coordinator"]
-    hub = data["hub"]
-    async_add_entities([EclPumpSwitch(coordinator, hub)])
+    runtime_data = entry.runtime_data
+    async_add_entities([EclPumpSwitch(runtime_data.coordinator, runtime_data.hub)])
 
 
-class EclPumpSwitch(CoordinatorEntity, SwitchEntity):
-    """Representation of a Danfoss ECL Modbus switch."""
+class EclPumpSwitch(DanfossEclEntity, SwitchEntity):
+    """Representation of a Danfoss ECL Modbus pump switch."""
 
-    def __init__(self, coordinator, hub):
-        """Initialize the switch."""
+    _attr_translation_key = "pump_switch"
+
+    def __init__(
+        self,
+        coordinator: DanfossEclCoordinator,
+        hub: EclHub,
+    ) -> None:
+        """Initialize the Danfoss ECL pump switch."""
         super().__init__(coordinator)
         self._hub = hub
-        self._attr_name = "Pump Switch"
-        self._attr_unique_id = f"{coordinator.config_entry.entry_id}-pump-switch"
-        self._attr_has_entity_name = True
+        self._attr_unique_id = f"{self._entry_id}-pump-switch"
 
     @property
-    def device_info(self):
-        """Return device information."""
-        return {
-            "identifiers": {(DOMAIN, self.coordinator.config_entry.entry_id)},
-            "name": "Danfoss ECL 110",
-            "manufacturer": "Danfoss",
-            "model": "ECL 110",
-        }
-
-    @property
-    def is_on(self):
-        """Return true if the switch is on."""
+    def is_on(self) -> bool | None:
+        """Return true if the pump switch is on."""
         val = self.coordinator.data.get("pump")
-        if val is None:
-            return None
-        return val == 1
+        return None if val is None else val == 1
 
-    async def async_turn_on(self, **kwargs):
-        """Turn the switch on."""
-        await self._hub.write_register(REG_PUMP, 1)
+    async def _async_set_pump(self, value: int) -> None:
+        """Write the pump register and request a coordinator refresh."""
+        try:
+            await self._hub.write_register(REG_PUMP, value)
+        except (ModbusError, OSError, TimeoutError) as err:
+            raise HomeAssistantError(f"Failed to write pump register: {err}") from err
         await self.coordinator.async_request_refresh()
 
-    async def async_turn_off(self, **kwargs):
-        """Turn the switch off."""
-        await self._hub.write_register(REG_PUMP, 0)
-        await self.coordinator.async_request_refresh()
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the pump switch on."""
+        await self._async_set_pump(1)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the pump switch off."""
+        await self._async_set_pump(0)

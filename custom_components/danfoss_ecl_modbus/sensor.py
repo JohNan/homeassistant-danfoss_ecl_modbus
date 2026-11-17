@@ -1,106 +1,113 @@
 """Sensor platform for Danfoss ECL Modbus."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Final
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
+    SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import ACTUAL_MODE_MAP
+from .entity import DanfossEclEntity
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+    from homeassistant.helpers.typing import StateType
+
+    from . import DanfossEclConfigEntry
+    from .coordinator import DanfossEclCoordinator
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class EclSensorEntityDescription(SensorEntityDescription):
-    """Class describing Danfoss ECL sensor entities."""
+    """Describe a Danfoss ECL sensor entity."""
 
-    key_in_data: str | None = None
-
-    scale: float = 1.0
-
-    native_precision: int | None = None
+    value_fn: Callable[[int], StateType]
 
 
-SENSOR_TYPES: tuple[EclSensorEntityDescription, ...] = (
+def _map_actual_mode(value: int) -> StateType:
+    """Map raw actual mode register value to an enum state."""
+    return ACTUAL_MODE_MAP.get(value)
+
+
+def _scale_tenth(value: int) -> float:
+    """Scale a tenths-of-degree integer register value to Celsius."""
+    return round(value * 0.1, 1)
+
+
+def _temp_sensor(
+    key: str,
+    *,
+    translation_key: str | None = None,
+) -> EclSensorEntityDescription:
+    """Build an entity description for a tenth-degree Celsius sensor."""
+    return EclSensorEntityDescription(
+        key=key,
+        translation_key=translation_key or key,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=1,
+        value_fn=_scale_tenth,
+    )
+
+
+SENSOR_TYPES: Final[tuple[EclSensorEntityDescription, ...]] = (
     EclSensorEntityDescription(
         key="actual_mode",
-        name="Actual Mode",
-        key_in_data="actual_mode",
-        scale=1.0,
+        translation_key="actual_mode",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(ACTUAL_MODE_MAP.values()),
+        value_fn=_map_actual_mode,
     ),
-    EclSensorEntityDescription(
-        key="outside_temp",
-        name="Outside Temp",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        key_in_data="outside_temp",
-        scale=0.1,
-        native_precision=1,
-    ),
-    EclSensorEntityDescription(
-        key="addition_temp",
-        name="Addition Temp",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        key_in_data="addition_temp",
-        scale=0.1,
-        native_precision=1,
-    ),
+    _temp_sensor("outside_temp"),
+    _temp_sensor("accumulated_outside_temp"),
+    _temp_sensor("addition_temp", translation_key="flow_temp"),
+    _temp_sensor("desired_flow_temp"),
+    _temp_sensor("return_temp"),
+    _temp_sensor("room_temp"),
+    _temp_sensor("desired_room_temp"),
 )
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: DanfossEclConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Danfoss ECL Modbus sensor platform."""
-    data = hass.data[DOMAIN][config_entry.entry_id]
-    coordinator = data["coordinator"]
-
+    coordinator = entry.runtime_data.coordinator
     async_add_entities(
         EclSensor(coordinator, description) for description in SENSOR_TYPES
     )
 
 
-class EclSensor(CoordinatorEntity, SensorEntity):
-    """Representation of a Danfoss ECL Modbus sensor."""
+class EclSensor(DanfossEclEntity, SensorEntity):
+    """Representation of a Danfoss ECL sensor."""
 
-    entity__description: EclSensorEntityDescription
+    entity_description: EclSensorEntityDescription
 
-    def __init__(self, coordinator, description):
-        """Initialize the sensor."""
+    def __init__(
+        self,
+        coordinator: DanfossEclCoordinator,
+        description: EclSensorEntityDescription,
+    ) -> None:
+        """Initialize the Danfoss ECL sensor."""
         super().__init__(coordinator)
         self.entity_description = description
-        assert coordinator.config_entry
-        self._entry_id = coordinator.config_entry.entry_id
         self._attr_unique_id = f"{self._entry_id}-{description.key}"
-        self._attr_has_entity_name = True
-        if description.native_precision is not None:
-            self._attr_native_precision = description.native_precision
 
     @property
-    def device_info(self):
-        """Return device information."""
-        return {
-            "identifiers": {(DOMAIN, self._entry_id)},
-            "name": "Danfoss ECL 110",
-            "manufacturer": "Danfoss",
-            "model": "ECL 110",
-        }
-
-    @property
-    def native_value(self):
+    def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        if self.entity_description.key_in_data is None:
-            return None
-        value = self.coordinator.data.get(self.entity_description.key_in_data)
-        if value is None:
-            return None
-        return value * self.entity_description.scale
+        raw = self.coordinator.data.get(self.entity_description.key)
+        return None if raw is None else self.entity_description.value_fn(raw)

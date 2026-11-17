@@ -21,3 +21,13 @@ scripts.yaml
 secrets.yaml
 tts/
 core/
+
+# Tooling & Testing
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+
+# Build Artifacts
+*.zip
