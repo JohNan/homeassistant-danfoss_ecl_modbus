@@ -32,6 +32,6 @@ jobs:
           zip -r ../../danfoss_ecl_modbus.zip . -x "*__pycache__*" "*.pyc"
 
       - name: Upload zip to release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v3.0.4
         with:
           files: danfoss_ecl_modbus.zip

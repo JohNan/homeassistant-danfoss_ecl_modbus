@@ -26,14 +26,14 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          ignore: brands
+          ignore: brands license
 
   lint:
     name: Lint and Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
       - name: Ruff lint
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
       - uses: actions/setup-python@v7

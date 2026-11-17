@@ -1,6 +1,7 @@
 {
   "domain": "danfoss_ecl_modbus",
   "name": "Danfoss ECL Modbus",
+  "categories": ["climate.thermostats_heating"],
   "codeowners": ["@JohNan"],
   "config_flow": true,
   "dependencies": ["modbus"],
