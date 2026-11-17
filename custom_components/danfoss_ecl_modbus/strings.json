@@ -1,0 +1,116 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Danfoss ECL Modbus",
+        "description": "Enter the connection details for your Danfoss ECL 110 Modbus TCP gateway.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "slave": "Slave / Unit ID"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the Modbus TCP gateway.",
+          "port": "Modbus TCP port (default 502).",
+          "slave": "Modbus slave / unit address of the Danfoss ECL controller (default 5)."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Danfoss ECL controller.",
+      "unknown": "Unexpected error occurred while connecting."
+    },
+    "abort": {
+      "already_configured": "This Danfoss ECL controller is already configured."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "pump": {
+        "name": "Pump"
+      },
+      "valve_opening": {
+        "name": "Valve opening"
+      },
+      "valve_closing": {
+        "name": "Valve closing"
+      }
+    },
+    "climate": {
+      "heating": {
+        "name": "Heating",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Auto",
+              "comfort": "Comfort",
+              "setback": "Setback",
+              "standby": "Standby"
+            }
+          }
+        }
+      }
+    },
+    "number": {
+      "heating_curve_slope": {
+        "name": "Heating curve slope"
+      },
+      "parallel_displacement": {
+        "name": "Parallel displacement"
+      },
+      "setback_temp": {
+        "name": "Setback temperature"
+      },
+      "flow_temp_min": {
+        "name": "Minimum flow temperature"
+      },
+      "flow_temp_max": {
+        "name": "Maximum flow temperature"
+      },
+      "cutout_temp": {
+        "name": "Summer cut-out temperature"
+      },
+      "return_temp_limit": {
+        "name": "Return temperature limit"
+      }
+    },
+    "sensor": {
+      "actual_mode": {
+        "name": "Actual mode",
+        "state": {
+          "manual": "Manual",
+          "auto": "Auto",
+          "comfort": "Comfort",
+          "setback": "Setback",
+          "standby": "Standby"
+        }
+      },
+      "outside_temp": {
+        "name": "Outside temperature"
+      },
+      "accumulated_outside_temp": {
+        "name": "Accumulated outside temperature"
+      },
+      "flow_temp": {
+        "name": "Flow temperature"
+      },
+      "desired_flow_temp": {
+        "name": "Desired flow temperature"
+      },
+      "return_temp": {
+        "name": "Return temperature"
+      },
+      "room_temp": {
+        "name": "Room temperature"
+      },
+      "desired_room_temp": {
+        "name": "Desired room temperature"
+      }
+    },
+    "switch": {
+      "pump_switch": {
+        "name": "Pump switch"
+      }
+    }
+  }
+}

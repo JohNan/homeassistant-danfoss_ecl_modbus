@@ -1,13 +1,14 @@
 {
   "domain": "danfoss_ecl_modbus",
   "name": "Danfoss ECL Modbus",
+  "categories": ["climate.thermostats_heating"],
   "codeowners": ["@JohNan"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["modbus"],
   "documentation": "https://github.com/JohNan/homeassistant-danfoss_ecl_modbus",
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/JohNan/homeassistant-danfoss_ecl_modbus/issues",
-  "requirements": ["pymodbus>=3.6.8"],
+  "requirements": ["modbus-connection>=4.12.7"],
   "version": "0.1.0"
 }

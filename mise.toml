@@ -1,0 +1,41 @@
+[tools]
+python = "3.14"
+uv = "latest"
+ruff = "latest"
+
+[env]
+_.path = [".venv/bin"]
+PYTHONPATH = "."
+UV_LINK_MODE = "copy"
+
+[tasks.setup]
+description = "Create virtualenv and sync locked dependencies"
+run = "uv sync --locked --dev"
+
+[tasks.lint]
+description = "Run Ruff linter"
+run = "uv run ruff check ."
+
+[tasks."lint:fix"]
+description = "Run Ruff linter with autofix"
+run = "uv run ruff check --fix ."
+
+[tasks."format:check"]
+description = "Check formatting with Ruff"
+run = "uv run ruff format --check ."
+
+[tasks.format]
+description = "Format code and apply Ruff fixes"
+run = "uv run ruff check --fix . && uv run ruff format ."
+
+[tasks.typecheck]
+description = "Run static type analysis with Mypy"
+run = "uv run mypy custom_components/danfoss_ecl_modbus tests"
+
+[tasks.test]
+description = "Run pytest suite with coverage"
+run = "uv run pytest"
+
+[tasks.check]
+description = "Run all lint, format, typecheck, and test gates"
+depends = ["lint", "format:check", "typecheck", "test"]
